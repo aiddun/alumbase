@@ -3,7 +3,7 @@
 open source community platform (WIP)
 
 architecture:
-react/vite, tailwind, firebase auth/db, algolia search.
+react/vite, tailwind, firebase auth/db, algolia search. includes somewhat advanced scraping protection 
 
 configuration guide coming later
 
