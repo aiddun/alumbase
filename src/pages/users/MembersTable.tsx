@@ -78,7 +78,7 @@ const Member = ({
         <div>
           {/* Pointer */}
           <svg
-            className="h-5 w-5 text-gray-400"
+            className={`h-5 w-5 text-gray-400 transform ${focused ? "rotate-90" : ""}`}
             viewBox="0 0 20 20"
             fill="currentColor"
           >
