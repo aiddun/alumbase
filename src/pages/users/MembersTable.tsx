@@ -150,7 +150,7 @@ const sampleMembers = [
 const MembersTable = ({ members }: { members: MemberI[] }) => (
   <>
     {members.length === 0 ? (
-      <p className="text-gray-700 ">Enter a query to search all profiles</p>
+      <p className="text-gray-700 text-center">Enter a query to search all profiles</p>
     ) : (
       <div className="bg-white shadow overflow-hidden sm:rounded-xl">
         <ul>

@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
-import logo from "./logo.svg";
-import "./App.css";
 import Register from "./pages/register/Register";
 import Nav, { NavPage } from "./Nav";
 import Profile from "./pages/profile/Profile";
@@ -35,7 +33,7 @@ function App() {
   const [user] = useAuthState(auth);
 
   return (
-    <div className="App bg-gray-50 h-full w-full">
+    <div className="App bg-gray-50 h-full w-full font-sans">
       <Router>
         <div>
           <Nav pages={links} />

@@ -31,7 +31,7 @@ export const TextInput = ({
     <>
       <label
         htmlFor={htmlFor}
-        className="block text-sm font-medium text-gray-700"
+        className="block text-sm font-medium text-gray-700 text-center"
       >
         {title}
         {required && <sup className="text-red-900">*</sup>}

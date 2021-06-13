@@ -129,7 +129,7 @@ const BasicProfileForm = ({ userData }: any) => {
       <div className="shadow sm:rounded-md sm:overflow-hidden">
         <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
           <div>
-            <label className="block text-sm font-medium">Photo</label>
+            <label className="block text-sm font-medium text-center">Photo</label>
             <div className="mt-1 flex flex-col items-center">
               <div className="relative">
                 {/* x button */}
