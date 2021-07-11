@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { auth } from "./util/firebase";
+import { supabase } from "./supabaseClient";
+import { useUser } from "./util/hooks";
 
 export interface NavPage {
   name: string;
@@ -20,6 +21,11 @@ const Nav = (props: { pages: NavPage[] }) => {
   const [widescreenProfileMenuShown, setWidescreenProfileMenuShown] =
     React.useState(false);
   const [menuShown, setMenuShown] = React.useState(false);
+  const [pfpURL, setPfpURL] = useState<string>("");
+
+  const { user, updateUser } = useUser();
+
+  const profile_url = user?.data?.profile_url;
 
   const location = useLocation();
 
@@ -147,10 +153,10 @@ const Nav = (props: { pages: NavPage[] }) => {
                   }
                   onBlur={() => setWidescreenProfileMenuShown(false)}
                 >
-                  {auth.currentUser?.photoURL ? (
+                  {profile_url && profile_url !== "" ? (
                     <img
                       className="h-8 w-8 rounded-full"
-                      src={auth.currentUser?.photoURL || ""}
+                      src={profile_url}
                       alt=""
                     />
                   ) : (
@@ -189,7 +195,11 @@ const Nav = (props: { pages: NavPage[] }) => {
                     Profile/Settings
                   </Link>
                   <button
-                    onClick={() => auth.signOut()}
+                    // TODO: Figure out why signout doesn't refresh state
+                    onClick={() => {
+                      supabase.auth.signOut();
+                      updateUser({});
+                    }}
                     className="block px-4 py-2 w-full text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out"
                     role="menuitem"
                   >

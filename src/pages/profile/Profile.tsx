@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { ReactChild, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   FormSelectInput,
@@ -7,24 +7,25 @@ import {
 } from "../../util/forminput";
 import EduExpTable from "./EduExpTable";
 import { useDropzone } from "react-dropzone";
-import { auth, firestore, storage } from "../../util/firebase";
 import ImageBlobReduce from "image-blob-reduce";
-import { useRemoteConfigString, useUser } from "reactfire";
 import { TextInput } from "../../util/input";
 import { PaddingContainer } from "../../util/paddingcontainer";
-import { useDocumentDataOnce } from "react-firebase-hooks/firestore";
+import { supabase } from "../../supabaseClient";
+import { definitions } from "../../../types/supabase";
+import { useEffect } from "react";
+import { useUser } from "../../util/hooks";
 
-interface ProfileAreaProps {
-  sectionTitle: string;
-  sectionDesc: string;
-  children: React.ReactNode;
-}
+type User = definitions["users"];
 
 const ProfileArea = ({
   sectionTitle,
   sectionDesc,
   children,
-}: ProfileAreaProps) => (
+}: {
+  sectionTitle: string;
+  sectionDesc: string;
+  children: ReactChild;
+}) => (
   <>
     <div className="mt-10 sm:mt-0">
       <div className="md:grid md:grid-cols-3 md:gap-6">
@@ -45,10 +46,12 @@ const ProfileArea = ({
 const emailRE =
   /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/;
 
+// Image Processing
 const reducer = new ImageBlobReduce({
   pica: ImageBlobReduce.pica({ features: ["js", "wasm", "ww"] }),
 });
 
+// Make sure to compress
 reducer._create_blob = function (env: any) {
   return this.pica
     .toBlob(env.out_canvas, "image/jpeg", 0.8)
@@ -58,16 +61,10 @@ reducer._create_blob = function (env: any) {
     });
 };
 
-interface BasicProfileFormData {
-  full_name: string;
-  year: string | number;
-  city: string;
-  profileImageURL?: string | null;
-}
-
-interface NewPFP {
-  blob?: Blob;
-  isEmpty?: boolean;
+enum IMAGE_STATE {
+  CURRENT,
+  CHANGED,
+  CLEARED,
 }
 
 const BasicProfileForm = ({ userData }: any) => {
@@ -78,32 +75,46 @@ const BasicProfileForm = ({ userData }: any) => {
     handleSubmit,
   } = useForm({ defaultValues: userData });
 
-  const [newPfp, setNewPfp] = useState<NewPFP | null>(null);
+  const [pfpURL, setPfpURL] = useState<string>("");
+  const [pfpBlob, setPfpBlob] = useState<Blob | null>(null);
+  const [imageSelectorState, setImageSelectorState] = useState<IMAGE_STATE>(
+    IMAGE_STATE.CURRENT
+  );
 
-  const onSubmit = (data: BasicProfileFormData) => {
-    const user = auth.currentUser;
-    if (newPfp && newPfp.blob && !newPfp.isEmpty) {
-      // Create a Storage Ref w/ username
-      const storageRef = storage.ref(
-        user?.uid + "/profilePicture/" + "pfp.jpeg"
-      );
+  useEffect(async () => {
+    if (imageSelectorState === IMAGE_STATE.CURRENT) {
+      const { data, error } = await supabase.storage
+        .from("users")
+        .createSignedUrl(`${supabase.auth.user()?.id}.jpeg`, 6000);
 
-      alert("submitted")
+      if (!error && data) {
+        const { signedURL } = data;
+        setPfpURL(signedURL || "");
+      } else {
+        setPfpURL("");
+      }
+    }
+  }, [imageSelectorState]);
 
-      // Upload file
-      const task = storageRef.put(newPfp.blob);
+  const { updateUser } = useUser();
 
-      data.profileImageURL = `${user?.uid}/profilePicture/pfp.jpeg`;
-    } else if (newPfp && newPfp.isEmpty) {
-      data.profileImageURL = null;
+  const onSubmit = async (data: Partial<User>) => {
+    const user = supabase.auth.user();
+    if (user && imageSelectorState === IMAGE_STATE.CHANGED) {
+      const path = `${user.id}.jpeg`;
+
+      let { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(path, pfpBlob as File);
+
+      data.avatar_url = path;
+    } else if (imageSelectorState === IMAGE_STATE.CLEARED) {
+      data.avatar_url = "";
     }
 
-    data.year = parseInt(`${data.year}`);
-
-    console.log(`users/${user?.uid}`);
-
-    const userRef = firestore.doc(`users/${user?.uid}`);
-    userRef.set(data, { merge: true });
+    console.log(data);
+    updateUser(data);
+    setImageSelectorState(IMAGE_STATE.CURRENT);
   };
 
   const onImageChange = async (files: File[]) => {
@@ -115,7 +126,8 @@ const BasicProfileForm = ({ userData }: any) => {
       unsharpThreshold: 2,
     });
 
-    setNewPfp({ blob });
+    setPfpBlob(blob);
+    setImageSelectorState(IMAGE_STATE.CHANGED);
   };
 
   const imageUploadRef = useRef();
@@ -129,16 +141,18 @@ const BasicProfileForm = ({ userData }: any) => {
       <div className="shadow sm:rounded-md sm:overflow-hidden">
         <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
           <div>
-            <label className="block text-sm font-medium text-center">Photo</label>
+            <label className="block text-sm font-medium text-center">
+              Photo
+            </label>
             <div className="mt-1 flex flex-col items-center">
               <div className="relative">
-                {/* x button */}
-                {(auth.currentUser?.photoURL || newPfp?.blob) && (
+                {/* Remove photo button */}
+                {(pfpURL || pfpBlob) && (
                   <button
                     className="w-5 h-5 absolute right-0 rounded-full bg-white shadow grid focus:outline-none"
                     onClick={() => {
                       // empty blob?
-                      setNewPfp({ isEmpty: true });
+                      setImageSelectorState(IMAGE_STATE.CLEARED);
                     }}
                   >
                     <svg
@@ -161,12 +175,11 @@ const BasicProfileForm = ({ userData }: any) => {
                   className="inline-block h-20  w-20 rounded-full overflow-hidden bg-gray-100"
                   {...getRootProps()}
                 >
-                  {auth.currentUser?.photoURL || (newPfp && !newPfp.isEmpty) ? (
+                  {imageSelectorState !== IMAGE_STATE.CLEARED &&
+                  pfpURL !== "" ? (
                     <img
                       src={
-                        newPfp?.blob
-                          ? URL.createObjectURL(newPfp?.blob)
-                          : auth.currentUser?.photoURL || ""
+                        pfpBlob ? URL.createObjectURL(pfpBlob) : pfpURL || ""
                       }
                       className="w-full h-full object-cover"
                     />
@@ -219,20 +232,9 @@ const BasicProfileForm = ({ userData }: any) => {
               />
             </div>
             <div className="col-span-6 sm:col-span-4">
-              {/* <FormTextInput
-                control={control}
-                title="Email address"
-                name="email_address"
-                htmlFor="email_address"
-                autoComplete="email"
-                error={errors.email_address}
-                required={false}
-                rules={{ pattern: emailRE }}
-                disabled={true}
-              /> */}
               <TextInput
                 title="Email"
-                value={auth.currentUser?.email || ""}
+                value={supabase.auth.user()?.email || ""}
                 disabled={true}
               />
             </div>
@@ -277,12 +279,6 @@ const BasicProfileForm = ({ userData }: any) => {
   );
 };
 
-interface EduExpFormData {
-  current_occupation?: string;
-  place_of_occupation?: string | number;
-  bio?: string;
-}
-
 const EduExpForm = ({ userData }: any) => {
   const {
     register,
@@ -291,12 +287,10 @@ const EduExpForm = ({ userData }: any) => {
     handleSubmit,
   } = useForm({ defaultValues: userData });
 
-  const onSubmit = (data: EduExpFormData) => {
-    alert("submitted")
+  const { updateUser } = useUser();
 
-    const user = auth.currentUser;
-    const userRef = firestore.doc(`users/${user?.uid}`);
-    userRef.set(data, { merge: true });
+  const onSubmit = (data: User) => {
+    updateUser(data);
   };
 
   return (
@@ -362,14 +356,13 @@ const EduExpForm = ({ userData }: any) => {
   );
 };
 
-interface AllPageData extends BasicProfileFormData, EduExpFormData {}
-
 const Profile = () => {
   // const [userData, loading, error] = useDocumentDataOnce<AllPageData>(() =>
   //   firestore.doc(`users/${user?.uid}`)
   // );
 
-  const userData = {}
+
+  const {dataUser: userData} = useUser()
 
   return (
     <PaddingContainer>

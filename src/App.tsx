@@ -1,62 +1,79 @@
-import React, { useState } from "react";
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
-import Register from "./pages/register/Register";
+import { User } from "@supabase/supabase-js";
+import Auth from "./components/Auth";
+import React, { useEffect, useState, useContext } from "react";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { definitions } from "../types/supabase";
 import Nav, { NavPage } from "./Nav";
 import Profile from "./pages/profile/Profile";
-import { auth } from "./util/firebase";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { StyledFirebaseAuth } from "react-firebaseui";
-import firebase from "firebase/app";
+import Register from "./pages/register/Register";
 import Members from "./pages/users/Members";
+import { supabase } from "./supabaseClient";
+import { useUser } from "./util/hooks";
+import Reset from "./pages/reset/Reset";
+import { Redirect } from "react-router";
+import { AuthProvider } from "./util/AuthUtil";
 
 const links: NavPage[] = [
   { name: "Members", path: "/members" },
-  { name: "Jobs", path: "/jobs" },
+  // { name: "Jobs", path: "/jobs" },
 ];
 
-// Configure FirebaseUI.
-const uiConfig = {
-  signInFlow: "popup",
-  signInOptions: [
-    firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-    firebase.auth.EmailAuthProvider.PROVIDER_ID,
-  ],
-  callbacks: {
-    // Avoid redirects after sign-in.
-    signInSuccessWithAuthResult: () => false,
-  },
-};
+// TODO: GLOBAL PROFILE STATE MANAGEMENT -> ONBOARDING, SEARCH
 
 function App() {
-  const [count, setCount] = useState(0);
+  // const { user } = useUser();
+  const [recoveryToken, setRecoveryToken] = useState<any>(null);
 
-  const [user] = useAuthState(auth);
+  useEffect(() => {
+    /* Recovery url is of the form
+     * <SITE_URL>#access_token=x&refresh_token=y&expires_in=z&token_type=bearer&type=recovery
+     * Read more on https://supabase.io/docs/reference/javascript/reset-password-email#notes
+     */
+    let url = window.location.hash;
+    let query: string = url.substr(1);
+    let result: any = {};
+
+    query.split("&").forEach((part) => {
+      const item = part.split("=");
+      result[item[0]] = decodeURIComponent(item[1]);
+    });
+
+    if (result.type === "recovery") {
+      setRecoveryToken(result.access_token);
+      alert(result.access_token);
+    }
+  }, []);
 
   return (
-    <div className="App bg-gray-50 h-full w-full font-sans">
+    <div className="App bg-gray-50 h-full w-screen font-sans">
       <Router>
-        <div>
-          <Nav pages={links} />
-          {/* A <Switch> looks through its children <Route>s and
-            renders the first one that matches the current URL. */}
-          <Switch>
-            <Route path="/members">
-              <Members />
-            </Route>
-            <Route path="/jobs">
-            </Route>
-            <Route path="/profile">
-              <Profile />
-            </Route>
-            <Route path="/register">
-              <Register />
-            </Route>
-            <Route path="/">
-              <StyledFirebaseAuth uiConfig={uiConfig} firebaseAuth={auth} />
-              <p>{JSON.stringify(auth.currentUser)}</p>
-            </Route>
-          </Switch>
-        </div>
+        <AuthProvider>
+          <div>
+            <Nav pages={links} />
+            {recoveryToken && (
+              <Reset
+                recoveryToken={recoveryToken}
+                setRecoveryToken={setRecoveryToken}
+              />
+            )}
+
+            <Switch>
+              <Route exact path="/">
+                <Redirect to="/members" />
+              </Route>
+              <Route path="/members">
+                <Members />
+              </Route>
+              {/* <Route path="/jobs"></Route> */}
+              <Route path="/profile">
+                <Profile />
+              </Route>
+              <Route path="/register">
+                <Register />
+              </Route>
+            </Switch>
+          </div>
+        </AuthProvider>
       </Router>
     </div>
   );

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { functions, searchMembers } from "../../util/firebase";
+import { supabase } from "../../supabaseClient";
 import { PaddingContainer } from "../../util/paddingcontainer";
 import MembersTable from "./MembersTable";
 
@@ -31,14 +31,24 @@ const Members = () => {
           <div className="mt-1 relative shadow-sm rounded-xl">
             {/* TODO: Fix focus color */}
             <form
-              onSubmit={(e) => {
+              onSubmit={async (e) => {
                 e.preventDefault();
                 if (searchText === "") {
                   setMemberHits([]);
                 } else {
-                  searchMembers(searchText).then((result) =>
-                    setMemberHits(result.data)
-                  );
+                  const { data, error } = await supabase
+                    .from("users")
+                    .select()
+                    .textSearch(
+                      "current_occupation|bio|place_of_occupation",
+                      // turn "foo bar" to "'foo' & 'bar'"
+                      searchText
+                        .split(" ")
+                        .map((token) => `'${token}'`)
+                        .join(" & ")
+                    );
+                  
+                    setMemberHits(data ?? [])
                 }
                 return false;
               }}
