@@ -1,17 +1,20 @@
 import React, { useState } from "react";
 import Obfuscate from "../../util/Obfuscate";
-import { MemberI } from "./Members";
+
+import { definitions } from "../../../types/supabase";
+type DataUser = definitions["members"];
 
 const Member = ({
   full_name,
   year,
   city,
-  profileImageURL,
+  avatar_url,
   current_occupation,
   place_of_occupation,
   bio,
-}: MemberI) => {
+}: DataUser) => {
   const [focused, setFocused] = useState(false);
+  const [email, setEmail] = useState("");
   return (
     <div
       className="block w-full hover:bg-gray-50 focus:outline-none focus:bg-gray-50 transition duration-150 ease-in-out cursor-pointer select-none"
@@ -23,9 +26,9 @@ const Member = ({
       <div className={`flex items-center px-4 py-4 sm:px-6`}>
         <div className="min-w-0 flex-1 flex items-center">
           <div className="flex-shrink-0">
-            <img
-              className="h-12 w-12 rounded-full"
-              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+            <div
+              className="h-12 w-12 rounded-full bg-gray-200"
+              // src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
               alt=""
             />
           </div>
@@ -78,7 +81,9 @@ const Member = ({
         <div>
           {/* Pointer */}
           <svg
-            className={`h-5 w-5 text-gray-400 transform ${focused ? "rotate-90" : ""}`}
+            className={`h-5 w-5 text-gray-400 transform ${
+              focused ? "rotate-90" : ""
+            }`}
             viewBox="0 0 20 20"
             fill="currentColor"
           >
@@ -102,61 +107,34 @@ const Member = ({
         </p>
         <button
           type="button"
-          className="block px-3 py-2 my-4 border border-transparent text-sm leading-4 
-                    font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-50 focus:outline-none 
-                    focus:border-blue-300 focus:shadow-outline-blue active:bg-blue-200 transition ease-in-out duration-150"
-          onClick={(e) => e.stopPropagation()}
+          className="px-3 py-2 my-4 border border-transparent text-sm leading-4 
+          font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-50 focus:outline-none 
+          focus:border-blue-300 focus:shadow-outline-blue active:bg-blue-200 transition ease-in-out duration-150"
+          onClick={(e) => {
+            e.stopPropagation();
+            setEmail("not yet added yet sorry lmao");
+          }}
         >
           Get email
         </button>
+        <p className="pl-3 inline-block text-gray-700">{email}</p>
       </div>
     </div>
   );
 };
 
-const sampleMembers = [
-  {
-    full_name: "Aidan Dunlap",
-    year: 2023,
-    city: "New York",
-    profileImageURL:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    current_occupation: "Software Engineering Intern",
-    place_of_occupation: "Microsoft",
-    bio: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-  },
-  {
-    full_name: "Bidan Dunlap",
-    year: 2023,
-    city: "New York",
-    profileImageURL:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    current_occupation: "Software Engineering Intern",
-    place_of_occupation: "Microsoft",
-    bio: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-  },
-  {
-    full_name: "Aidan Dunlap",
-    year: 2023,
-    city: "New York",
-    profileImageURL:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    current_occupation: "Software Engineering Intern",
-    place_of_occupation: "Microsoft",
-    bio: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-  },
-];
-
-const MembersTable = ({ members }: { members: MemberI[] }) => (
+const MembersTable = ({ members }: { members: DataUser[] }) => (
   <>
     {members.length === 0 ? (
-      <p className="text-gray-700 text-center">Enter a query to search all profiles</p>
+      <p className="text-gray-700 text-center">
+        Enter a query to search all profiles
+      </p>
     ) : (
       <div className="bg-white shadow overflow-hidden sm:rounded-xl">
         <ul>
           {members.map((p) => (
             // TODO: change to userid
-            <li key={p.objectID}>
+            <li key={p}>
               <Member {...p} />
             </li>
           ))}

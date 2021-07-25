@@ -3,20 +3,12 @@ import { supabase } from "../../supabaseClient";
 import { PaddingContainer } from "../../util/paddingcontainer";
 import MembersTable from "./MembersTable";
 
-export interface MemberI {
-  full_name: string;
-  year: string | number;
-  city: string;
-  profileImageURL?: string;
-  current_occupation?: string | null;
-  place_of_occupation?: string | null;
-  bio?: string | null;
-  objectID: string;
-}
+import { definitions } from "../../../types/supabase";
+type DataUser = definitions["members"];
 
 const Members = () => {
   const [searchText, setSearchText] = useState<string>("");
-  const [memberHits, setMemberHits] = useState([]);
+  const [memberHits, setMemberHits] = useState<DataUser[]>([]);
 
   return (
     <PaddingContainer>
@@ -37,10 +29,10 @@ const Members = () => {
                   setMemberHits([]);
                 } else {
                   const { data, error } = await supabase
-                    .from("users")
+                    .from("members")
                     .select()
                     .textSearch(
-                      "current_occupation|bio|place_of_occupation",
+                      "full_name|city|current_occupation|bio|place_of_occupation|year",
                       // turn "foo bar" to "'foo' & 'bar'"
                       searchText
                         .split(" ")

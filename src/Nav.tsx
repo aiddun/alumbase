@@ -23,9 +23,9 @@ const Nav = (props: { pages: NavPage[] }) => {
   const [menuShown, setMenuShown] = React.useState(false);
   const [pfpURL, setPfpURL] = useState<string>("");
 
-  const { user, updateUser } = useUser();
+  const {  updateUser } = useUser();
 
-  const profile_url = user?.data?.profile_url;
+  const profile_url = "";
 
   const location = useLocation();
 

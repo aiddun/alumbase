@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { FullPageAuthCard } from "../../components/Auth";
-import { supabase } from "../../supabaseClient";
+import { FullPageAuthCard } from "./Auth";
+import { supabase } from "../supabaseClient";
 import { Redirect } from "react-router";
 
 export default function Reset({
@@ -13,7 +13,7 @@ export default function Reset({
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [errMsg, setErrMsg] = useState("");
-  const [reset, setReset] = useState<false>(false);
+  const [reset, setReset] = useState<boolean>(false);
 
   return (
     // Disable external clicks - required modal

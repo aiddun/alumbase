@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 
 enum AUTH_STATE {
@@ -16,9 +16,9 @@ const AuthLogin = ({ setAuthState }) => {
     <form
       onSubmit={async (e) => {
         e.preventDefault();
-        const {error} = await supabase.auth.signIn({ email, password });
+        const { error } = await supabase.auth.signIn({ email, password });
         if (error) {
-            setErrorText(error.message)
+          setErrorText(error.message);
         }
       }}
     >
@@ -61,7 +61,7 @@ const AuthLogin = ({ setAuthState }) => {
         </div>
       </div>
       <div className="mt-6 flex items-center justify-between">
-        <div className="flex items-center">
+        {/* <div className="flex items-center">
           <input
             id="remember_me"
             type="checkbox"
@@ -75,10 +75,13 @@ const AuthLogin = ({ setAuthState }) => {
           >
             Remember me
           </label>
-        </div>
+        </div> */}
         <div className="text-sm leading-5">
           <button
-            onClick={() => setAuthState(AUTH_STATE.RESET)}
+            type="button"
+            onClick={() => {
+              setAuthState(AUTH_STATE.RESET);
+            }}
             className="font-medium text-red-600 hover:text-red-500 focus:outline-none focus:underline transition ease-in-out duration-150"
           >
             Forgot your password?
@@ -160,15 +163,13 @@ const AuthReset = ({ setAuthState }) => {
             Send reset email
           </button>
         </span>
-        <p
-          onClick={() => setAuthState(AUTH_STATE.LOGIN)}
-          className="font-medium text-red-600 hover:text-red-500 focus:outline-none focus:underline transition ease-in-out duration-150"
-        >
+        <p className="font-medium text-red-600 hover:text-red-500 focus:outline-none focus:underline transition ease-in-out duration-150">
           {responseText}
         </p>
         <div className="mt-6 flex items-center justify-between text-center">
           <div className="text-sm leading-5">
             <button
+              type="button"
               onClick={() => setAuthState(AUTH_STATE.LOGIN)}
               className="font-medium text-red-600 hover:text-red-500 focus:outline-none focus:underline transition ease-in-out duration-150"
             >

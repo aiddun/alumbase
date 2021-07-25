@@ -1,21 +1,21 @@
-import React, { ReactChild, useRef, useState } from "react";
+import ImageBlobReduce from "image-blob-reduce";
+import React, { ReactChild, useEffect, useRef, useState } from "react";
+import { useDropzone } from "react-dropzone";
 import { useForm } from "react-hook-form";
+import { definitions } from "../../../types/supabase";
+import { supabase } from "../../supabaseClient";
 import {
   FormSelectInput,
   FormTextAreaInput,
   FormTextInput,
 } from "../../util/forminput";
-import EduExpTable from "./EduExpTable";
-import { useDropzone } from "react-dropzone";
-import ImageBlobReduce from "image-blob-reduce";
+import { useUser } from "../../util/hooks";
 import { TextInput } from "../../util/input";
 import { PaddingContainer } from "../../util/paddingcontainer";
-import { supabase } from "../../supabaseClient";
-import { definitions } from "../../../types/supabase";
-import { useEffect } from "react";
-import { useUser } from "../../util/hooks";
 
-type User = definitions["users"];
+type User = definitions["members"];
+
+// const f: User
 
 const ProfileArea = ({
   sectionTitle,
@@ -67,7 +67,7 @@ enum IMAGE_STATE {
   CLEARED,
 }
 
-const BasicProfileForm = ({ userData }: any) => {
+export const BasicProfileForm = ({ userData }: any) => {
   const {
     register,
     formState: { errors, isDirty, isValid, isSubmitted, isSubmitSuccessful },
@@ -75,44 +75,32 @@ const BasicProfileForm = ({ userData }: any) => {
     handleSubmit,
   } = useForm({ defaultValues: userData });
 
-  const [pfpURL, setPfpURL] = useState<string>("");
+  const { dataUser, updateUser } = useUser();
+  const [pfpURL, setPfpURL] = useState<string>(`avatars/${dataUser.id}.jpg`);
   const [pfpBlob, setPfpBlob] = useState<Blob | null>(null);
   const [imageSelectorState, setImageSelectorState] = useState<IMAGE_STATE>(
     IMAGE_STATE.CURRENT
   );
 
-  useEffect(async () => {
-    if (imageSelectorState === IMAGE_STATE.CURRENT) {
-      const { data, error } = await supabase.storage
-        .from("users")
-        .createSignedUrl(`${supabase.auth.user()?.id}.jpeg`, 6000);
-
-      if (!error && data) {
-        const { signedURL } = data;
-        setPfpURL(signedURL || "");
-      } else {
-        setPfpURL("");
-      }
-    }
-  }, [imageSelectorState]);
-
-  const { updateUser } = useUser();
-
   const onSubmit = async (data: Partial<User>) => {
     const user = supabase.auth.user();
     if (user && imageSelectorState === IMAGE_STATE.CHANGED) {
-      const path = `${user.id}.jpeg`;
+      const path = `avatars/${user.id}.jpg`;
 
       let { error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(path, pfpBlob as File);
+        .update(path, pfpBlob as File, {
+          upsert: true,
+          cacheControl: `${60 * 60}`,
+        });
+
+      if (uploadError) alert(uploadError.message);
 
       data.avatar_url = path;
     } else if (imageSelectorState === IMAGE_STATE.CLEARED) {
       data.avatar_url = "";
     }
 
-    console.log(data);
     updateUser(data);
     setImageSelectorState(IMAGE_STATE.CURRENT);
   };
@@ -130,11 +118,14 @@ const BasicProfileForm = ({ userData }: any) => {
     setImageSelectorState(IMAGE_STATE.CHANGED);
   };
 
+  // TODO: Reenable later
   const imageUploadRef = useRef();
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop: onImageChange,
-    accept: "image/*",
-  });
+  // const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  //   onDrop: onImageChange,
+  //   accept: "image/*",
+  // });
+
+  // debugger;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -150,8 +141,9 @@ const BasicProfileForm = ({ userData }: any) => {
                 {(pfpURL || pfpBlob) && (
                   <button
                     className="w-5 h-5 absolute right-0 rounded-full bg-white shadow grid focus:outline-none"
-                    onClick={() => {
+                    onClick={(e) => {
                       // empty blob?
+                      e.preventDefault();
                       setImageSelectorState(IMAGE_STATE.CLEARED);
                     }}
                   >
@@ -173,28 +165,36 @@ const BasicProfileForm = ({ userData }: any) => {
                 )}
                 <span
                   className="inline-block h-20  w-20 rounded-full overflow-hidden bg-gray-100"
-                  {...getRootProps()}
+                  // TODO: Reenable
+                  // {...getRootProps()}
                 >
-                  {imageSelectorState !== IMAGE_STATE.CLEARED &&
+                  {/* {imageSelectorState !== IMAGE_STATE.CLEARED ||
                   pfpURL !== "" ? (
                     <img
                       src={
-                        pfpBlob ? URL.createObjectURL(pfpBlob) : pfpURL || ""
+                        imageSelectorState === IMAGE_STATE.CHANGED && pfpBlob
+                          ? URL.createObjectURL(pfpBlob)
+                          : pfpURL
                       }
                       className="w-full h-full object-cover"
                     />
-                  ) : (
+                  ) : ( */}
                     <div className="w-full h-full bg-gray-300"></div>
-                  )}
+                  {/* )} */}
                 </span>
               </div>
               <button
                 type="button"
                 className="mt-4 bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                // onClick={() => imageUploadRef.current?.click()}
-                {...getRootProps()}
+                onClick={(e) => {
+                  e.preventDefault();
+                  // imageUploadRef.current?.click();
+                }}
+                // TODO: Reenable
+                // {...getRootProps()}
+                disabled={true}
               >
-                Change
+                Broken atm (don't try to use)
               </button>
               <input
                 className="hidden"
@@ -203,7 +203,8 @@ const BasicProfileForm = ({ userData }: any) => {
                 onChange={onImageChange}
                 ref={imageUploadRef}
                 accept="image/*"
-                {...getInputProps()}
+                // TODO: REENABLE
+                // {...getInputProps()}
               />
             </div>
           </div>
@@ -252,11 +253,11 @@ const BasicProfileForm = ({ userData }: any) => {
                   "Other",
                 ]}
                 title="Location"
-                name="location"
+                name="city"
                 htmlFor="city"
                 autoComplete="city"
                 required={true}
-                error={errors.location}
+                error={errors.city}
                 optionKey="Other"
               />
             </div>
@@ -279,7 +280,7 @@ const BasicProfileForm = ({ userData }: any) => {
   );
 };
 
-const EduExpForm = ({ userData }: any) => {
+export const EduExpForm = ({ userData }: any) => {
   const {
     register,
     formState: { errors, isSubmitSuccessful, isSubmitted, isValid },
@@ -361,8 +362,7 @@ const Profile = () => {
   //   firestore.doc(`users/${user?.uid}`)
   // );
 
-
-  const {dataUser: userData} = useUser()
+  const { dataUser: userData } = useUser();
 
   return (
     <PaddingContainer>

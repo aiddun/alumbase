@@ -1,13 +1,17 @@
 import React, { useContext, useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
 import Auth from "../components/Auth";
+import { definitions } from "../../types/supabase";
+import { User as AuthUser } from "@supabase/supabase-js";
+
+type DataUser = definitions["members"];
 
 export const AuthContext = React.createContext<any>(undefined);
 
 export function AuthProvider({ children }) {
-  const [authUser, setAuthUser] = useState({});
-  const [dataUser, setDataUser] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [authUser, setAuthUser] = useState<AuthUser | null>();
+  const [dataUser, setDataUser] = useState<DataUser | null>();
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     // Check active sessions and sets the user
@@ -16,10 +20,16 @@ export function AuthProvider({ children }) {
     setAuthUser(session?.user ?? null);
 
     const syncUserData = async () => {
-      setDataUser(
-        (await supabase.from("users").select().eq("id", session?.user?.id))
-          ?.body[0]
-      );
+      const userDatas = (
+        await supabase.from("members").select().eq("id", session?.user?.id)
+      ).data;
+      if (userDatas?.length === 1) {
+        const userData = userDatas[0];
+        console.log(userData);
+        setDataUser(userData);
+      } else {
+        // TODO
+      }
       setLoading(false);
     };
 
@@ -38,15 +48,19 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  const updateUser = async (updates: any) => {
+  const updateUser = async (updates: Partial<DataUser>, noUpsert = false) => {
     // todo: add usetoast for error
 
-    let { error } = await supabase.from("users").upsert(
+    const payload = [
       { id: authUser?.id, ...updates },
       {
         returning: "minimal", // Don't return the value after inserting
-      }
-    );
+      },
+    ];
+
+    let { error } = await (noUpsert
+      ? supabase.from("members").update(...payload)
+      : supabase.from("members").upsert(...payload));
 
     if (error) {
       throw error;
@@ -63,7 +77,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={value}>
-      {loading ? <Auth/> : children}
+      {!supabase.auth.session()?.user || loading ? <Auth /> : children}
     </AuthContext.Provider>
   );
 }

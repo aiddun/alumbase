@@ -12,21 +12,21 @@ export interface paths {
       };
     };
   };
-  "/users": {
+  "/members": {
     get: {
       parameters: {
         query: {
-          id?: parameters["rowFilter.users.id"];
-          updated_at?: parameters["rowFilter.users.updated_at"];
-          full_name?: parameters["rowFilter.users.full_name"];
-          avatar_url?: parameters["rowFilter.users.avatar_url"];
-          linkedin?: parameters["rowFilter.users.linkedin"];
-          year?: parameters["rowFilter.users.year"];
-          city?: parameters["rowFilter.users.city"];
-          bio?: parameters["rowFilter.users.bio"];
-          current_occupation?: parameters["rowFilter.users.current_occupation"];
-          place_of_occupation?: parameters["rowFilter.users.place_of_occupation"];
-          onboarded?: parameters["rowFilter.users.onboarded"];
+          id?: parameters["rowFilter.members.id"];
+          updated_at?: parameters["rowFilter.members.updated_at"];
+          full_name?: parameters["rowFilter.members.full_name"];
+          avatar_url?: parameters["rowFilter.members.avatar_url"];
+          linkedin?: parameters["rowFilter.members.linkedin"];
+          year?: parameters["rowFilter.members.year"];
+          city?: parameters["rowFilter.members.city"];
+          bio?: parameters["rowFilter.members.bio"];
+          current_occupation?: parameters["rowFilter.members.current_occupation"];
+          place_of_occupation?: parameters["rowFilter.members.place_of_occupation"];
+          onboarded?: parameters["rowFilter.members.onboarded"];
           /** Filtering Columns */
           select?: parameters["select"];
           /** Ordering */
@@ -48,7 +48,7 @@ export interface paths {
       responses: {
         /** OK */
         200: {
-          schema: definitions["users"][];
+          schema: definitions["members"][];
         };
         /** Partial Content */
         206: unknown;
@@ -57,8 +57,8 @@ export interface paths {
     post: {
       parameters: {
         body: {
-          /** users */
-          users?: definitions["users"];
+          /** members */
+          members?: definitions["members"];
         };
         query: {
           /** Filtering Columns */
@@ -77,17 +77,17 @@ export interface paths {
     delete: {
       parameters: {
         query: {
-          id?: parameters["rowFilter.users.id"];
-          updated_at?: parameters["rowFilter.users.updated_at"];
-          full_name?: parameters["rowFilter.users.full_name"];
-          avatar_url?: parameters["rowFilter.users.avatar_url"];
-          linkedin?: parameters["rowFilter.users.linkedin"];
-          year?: parameters["rowFilter.users.year"];
-          city?: parameters["rowFilter.users.city"];
-          bio?: parameters["rowFilter.users.bio"];
-          current_occupation?: parameters["rowFilter.users.current_occupation"];
-          place_of_occupation?: parameters["rowFilter.users.place_of_occupation"];
-          onboarded?: parameters["rowFilter.users.onboarded"];
+          id?: parameters["rowFilter.members.id"];
+          updated_at?: parameters["rowFilter.members.updated_at"];
+          full_name?: parameters["rowFilter.members.full_name"];
+          avatar_url?: parameters["rowFilter.members.avatar_url"];
+          linkedin?: parameters["rowFilter.members.linkedin"];
+          year?: parameters["rowFilter.members.year"];
+          city?: parameters["rowFilter.members.city"];
+          bio?: parameters["rowFilter.members.bio"];
+          current_occupation?: parameters["rowFilter.members.current_occupation"];
+          place_of_occupation?: parameters["rowFilter.members.place_of_occupation"];
+          onboarded?: parameters["rowFilter.members.onboarded"];
         };
         header: {
           /** Preference */
@@ -102,21 +102,21 @@ export interface paths {
     patch: {
       parameters: {
         query: {
-          id?: parameters["rowFilter.users.id"];
-          updated_at?: parameters["rowFilter.users.updated_at"];
-          full_name?: parameters["rowFilter.users.full_name"];
-          avatar_url?: parameters["rowFilter.users.avatar_url"];
-          linkedin?: parameters["rowFilter.users.linkedin"];
-          year?: parameters["rowFilter.users.year"];
-          city?: parameters["rowFilter.users.city"];
-          bio?: parameters["rowFilter.users.bio"];
-          current_occupation?: parameters["rowFilter.users.current_occupation"];
-          place_of_occupation?: parameters["rowFilter.users.place_of_occupation"];
-          onboarded?: parameters["rowFilter.users.onboarded"];
+          id?: parameters["rowFilter.members.id"];
+          updated_at?: parameters["rowFilter.members.updated_at"];
+          full_name?: parameters["rowFilter.members.full_name"];
+          avatar_url?: parameters["rowFilter.members.avatar_url"];
+          linkedin?: parameters["rowFilter.members.linkedin"];
+          year?: parameters["rowFilter.members.year"];
+          city?: parameters["rowFilter.members.city"];
+          bio?: parameters["rowFilter.members.bio"];
+          current_occupation?: parameters["rowFilter.members.current_occupation"];
+          place_of_occupation?: parameters["rowFilter.members.place_of_occupation"];
+          onboarded?: parameters["rowFilter.members.onboarded"];
         };
         body: {
-          /** users */
-          users?: definitions["users"];
+          /** members */
+          members?: definitions["members"];
         };
         header: {
           /** Preference */
@@ -132,18 +132,17 @@ export interface paths {
 }
 
 export interface definitions {
-  users: {
+  members: {
     /**
      * Note:
      * This is a Primary Key.<pk/>
-     * This is a Foreign Key to `users.id`.<fk table='users' column='id'/>
      */
     id: string;
     updated_at?: string;
     full_name: string;
     avatar_url?: string;
     linkedin?: string;
-    year: number;
+    year: string;
     city: string;
     bio?: string;
     current_occupation?: string;
@@ -173,19 +172,19 @@ export interface parameters {
   offset: string;
   /** Limiting and Pagination */
   limit: string;
-  /** users */
-  "body.users": definitions["users"];
-  "rowFilter.users.id": string;
-  "rowFilter.users.updated_at": string;
-  "rowFilter.users.full_name": string;
-  "rowFilter.users.avatar_url": string;
-  "rowFilter.users.linkedin": string;
-  "rowFilter.users.year": string;
-  "rowFilter.users.city": string;
-  "rowFilter.users.bio": string;
-  "rowFilter.users.current_occupation": string;
-  "rowFilter.users.place_of_occupation": string;
-  "rowFilter.users.onboarded": string;
+  /** members */
+  "body.members": definitions["members"];
+  "rowFilter.members.id": string;
+  "rowFilter.members.updated_at": string;
+  "rowFilter.members.full_name": string;
+  "rowFilter.members.avatar_url": string;
+  "rowFilter.members.linkedin": string;
+  "rowFilter.members.year": string;
+  "rowFilter.members.city": string;
+  "rowFilter.members.bio": string;
+  "rowFilter.members.current_occupation": string;
+  "rowFilter.members.place_of_occupation": string;
+  "rowFilter.members.onboarded": string;
 }
 
 export interface operations {}
