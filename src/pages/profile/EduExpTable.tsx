@@ -176,6 +176,7 @@ const EduExpTableContainer = memo(() => {
 });
 
 const EduExpTable = () => (
+  // @ts-ignore
   <DndProvider backend={MultiBackend} options={HTML5toTouch}>
     <EduExpTableContainer />
   </DndProvider>

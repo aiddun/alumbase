@@ -6,7 +6,11 @@ enum AUTH_STATE {
   RESET,
 }
 
-const AuthLogin = ({ setAuthState }) => {
+const AuthLogin = ({
+  setAuthState,
+}: {
+  setAuthState: (s: AUTH_STATE) => void;
+}) => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [rememberMe, setRememberMe] = useState<boolean>(false);
@@ -119,15 +123,21 @@ const AuthLogin = ({ setAuthState }) => {
     </form>
   );
 };
-const AuthReset = ({ setAuthState }) => {
+const AuthReset = ({
+  setAuthState,
+}: {
+  setAuthState: (s: AUTH_STATE) => void;
+}) => {
   const [email, setEmail] = useState<string>("");
   const [responseText, setResponseText] = useState<string>("");
 
   return (
     <form
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
-        const { data, error } = supabase.auth.api.resetPasswordForEmail(email);
+        const { data, error } = await supabase.auth.api.resetPasswordForEmail(
+          email
+        );
         if (error) {
           setResponseText("Something went wrong");
         } else {
@@ -182,7 +192,7 @@ const AuthReset = ({ setAuthState }) => {
   );
 };
 
-export const AuthCard = ({ children }) => {
+export const AuthCard = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
       {children}
@@ -190,7 +200,11 @@ export const AuthCard = ({ children }) => {
   );
 };
 
-export const FullPageAuthCard = ({ children }) => (
+export const FullPageAuthCard = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => (
   <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
     <AuthCard>{children}</AuthCard>
   </div>
@@ -202,9 +216,9 @@ export default function Auth() {
   return (
     <FullPageAuthCard>
       {authState === AUTH_STATE.LOGIN ? (
-        <AuthLogin {...{ setAuthState }} />
+        <AuthLogin setAuthState={setAuthState} />
       ) : (
-        <AuthReset {...{ setAuthState }} />
+        <AuthReset setAuthState={setAuthState} />
       )}
     </FullPageAuthCard>
   );

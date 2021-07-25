@@ -8,7 +8,7 @@ type DataUser = definitions["members"];
 
 export const AuthContext = React.createContext<any>(undefined);
 
-export function AuthProvider({ children }) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authUser, setAuthUser] = useState<AuthUser | null>();
   const [dataUser, setDataUser] = useState<DataUser | null>();
   const [loading, setLoading] = useState<boolean>(true);
@@ -59,13 +59,17 @@ export function AuthProvider({ children }) {
     ];
 
     let { error } = await (noUpsert
+      // Compiler is wrong
+      // @ts-ignore
       ? supabase.from("members").update(...payload)
+      // @ts-ignore
       : supabase.from("members").upsert(...payload));
-
-    if (error) {
-      throw error;
-    }
-
+      
+      if (error) {
+        throw error;
+      }
+      
+    // @ts-ignore
     setDataUser({ ...dataUser, ...updates });
   };
 
