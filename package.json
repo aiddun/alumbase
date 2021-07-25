@@ -6,6 +6,7 @@
     "build": "tsc --noEmit && vite build",
     "serve": "vite preview"
   },
+  "license" : "(ISC OR GPL-3.0)",
   "dependencies": {
     "@supabase/supabase-js": "^1.18.0",
     "@supabase/ui": "^0.28.1",
