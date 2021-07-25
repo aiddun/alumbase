@@ -1,3 +1,5 @@
+// No types anywhere for image-blob-reduce
+// @ts-ignore
 import ImageBlobReduce from "image-blob-reduce";
 import React, { ReactChild, useEffect, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
@@ -200,8 +202,8 @@ export const BasicProfileForm = ({ userData }: any) => {
                 className="hidden"
                 type="file"
                 name="file"
-                onChange={onImageChange}
-                ref={imageUploadRef}
+                // onChange={onImageChange}
+                // ref={imageUploadRef}
                 accept="image/*"
                 // TODO: REENABLE
                 // {...getInputProps()}

@@ -29,7 +29,7 @@ const Member = ({
             <div
               className="h-12 w-12 rounded-full bg-gray-200"
               // src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-              alt=""
+              // alt=""
             />
           </div>
           <div className="min-w-0 flex-1 px-4 md:grid md:grid-cols-2 md:gap-4">
@@ -134,7 +134,7 @@ const MembersTable = ({ members }: { members: DataUser[] }) => (
         <ul>
           {members.map((p) => (
             // TODO: change to userid
-            <li key={p}>
+            <li key={p.id}>
               <Member {...p} />
             </li>
           ))}

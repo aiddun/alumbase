@@ -3,3 +3,11 @@ node_modules
 dist
 dist-ssr
 *.local
+
+.DS_*
+*.log
+logs
+**/*.backup.*
+**/*.back.*
+
+bower_components

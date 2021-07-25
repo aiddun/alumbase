@@ -130,9 +130,9 @@ export default function Onboard() {
                 const required_fields = ["full_name", "year", "city"];
                 if (
                   passwordSet &&
-                  required_fields
-                    .map((f) => userData[f])
-                    .reduce((acc: boolean, cur) => acc && !!cur, true)
+                  userData.full_name &&
+                  userData.year &&
+                  userData.city
                 ) {
                   setErrText("");
                   updateUser({ onboarded: true }, true);
